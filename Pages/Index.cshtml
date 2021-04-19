@@ -1,0 +1,202 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+<style>
+    .chess-board {
+        border-spacing: 0;
+        border-collapse: collapse;
+    }
+
+        .chess-board th {
+            padding: .5em;
+        }
+
+        .chess-board td {
+            border: 1px solid;
+            width: 4em;
+            height: 4em;
+        }
+
+        .chess-board .light {
+            background: #eee;
+        }
+
+        .chess-board .dark {
+            background: #000;
+        }
+
+    .btnX:hover {
+        background-color: #3e8e41;
+        color: white;
+    }
+
+    .table.table-hover.table-bordered tr:hover {
+        background: none;
+    }
+
+    td:hover {
+        background: lightgray;
+    }
+    /* a few selector examples */
+    td[colspan]:hover {
+        background: lime;
+    }
+</style>
+<div class="text-left" style="margin-left:15px;">
+    <h1 class="display-4">Welcome</h1>
+    <h3>Player 1 vs Player 2</h3>
+    <h4>Currently Playing:</h4> @if (Model.ColorPlayingNow == "W")
+    {<h4>White</h4>}
+    else
+    { <h4>Black</h4>}
+</div>
+@{ int count = 0;
+    int startCount = 0;
+    int end = 8;
+
+}
+<!-- Button trigger modal -->
+<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal" style="visibility:hidden;" id="triggerBtn">
+    Launch demo modal
+</button>
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel" style="color:red; font-size: 25px;">Warning</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+              @Html.Raw(@Model.Message);
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+            
+            </div>
+        </div>
+    </div>
+</div>
+
+<table class="chess-board">
+    <tbody>
+        <tr>
+            <th></th>
+            <th>a</th>
+            <th>b</th>
+            <th>c</th>
+            <th>d</th>
+            <th>e</th>
+            <th>f</th>
+            <th>g</th>
+            <th>h</th>
+        </tr>
+
+        @{
+            int counter = 1;
+            string style = "dark";
+        }
+        @while (true)
+        {
+            var start = Model.board.Tiles.Where(x => x.Key >= startCount && x.Key < end).ToList();
+            <tr>
+                @if (counter <= 8)
+                {
+                    <th>
+                        @counter
+                    </th>
+                }
+
+                @foreach (var i in start)
+                {
+                    <td class="@style  btnX" style="width: 100px; height:100px;" id="@i.Value.Description" onclick="triggerTile('@i.Value.Description')">
+                        @if (!i.Value.IsEmpty)
+                        {
+
+                            <img src="~/images/@i.Value.Piece.GetImage()" style="width: 90px; height:90px;" />
+                        }
+                    </td>
+                    @if (style == "dark") { style = "light"; }
+                    else { style = "dark"; }
+                }
+            </tr>
+            if (end == 64) { break; }
+            startCount += 8;
+            end += 8;
+
+            if (counter <= 8) { counter += 1; }
+
+            @if (style == "dark") { style = "light"; }
+            else { style = "dark"; }
+
+
+
+        }
+    </tbody>
+</table>
+
+
+
+
+<form method="post" id="formPost">
+    <input id="DataBox1" asp-for="@Model.DataField1" name="DataField1" type="hidden" />
+    <input id="DataBox2" asp-for="@Model.DataField2" name="DataField2" type="hidden" />
+    <input id="GameState" asp-for="GameState" type="hidden" />
+    <input id="Pieces" asp-for="Pieces" type="hidden" />
+    <input id="counter" type="hidden" />
+    <input id="ColorPlayingNow" type="hidden" asp-for="ColorPlayingNow" />
+    <input id="Message" type="hidden" asp-for="Message" />
+    
+</form>
+@section Scripts{
+    <script>
+        var clicks = 0;
+        if ('@Model.Message' != "") {
+            $("#triggerBtn").click();
+        }
+    
+        function triggerTile(id) {
+
+            if (clicks == 0) {
+                // first click
+                console.log(id);
+                document.getElementById("DataBox1").value = id;
+                console.log($("#DataBox1").val());
+                document.getElementById(id).style = "background-color:blue";
+            } else {
+                // second click
+                //var colorPlaying = document.getElementById("ColorPlayingNow").value;
+                //if (colorPlaying == "W") {
+                //    document.getElementById("ColorPlayingNow").value = "B";
+                //}
+                //else {
+                //    document.getElementById("ColorPlayingNow").value = "W";
+                //}
+
+                document.getElementById("DataBox2").value = id;
+                var prevClick = document.getElementById("DataBox1").value;
+
+                var click2 = document.getElementById("DataBox2").value
+                document.getElementById(prevClick).style = "background-color:none";
+
+                document.getElementById("DataBox2").value = click2;
+                document.getElementById("DataBox1").value = prevClick;
+                console.log(click2);
+                console.log(prevClick);
+                $("#formPost").submit();
+            }
+            clicks += 1;
+
+
+
+
+        }
+  
+    </script>
+
+}
